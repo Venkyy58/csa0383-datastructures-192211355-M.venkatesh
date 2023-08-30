@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define SIZE 10
+
+typedef struct {
+    int key;
+    int value;
+} HashEntry;
+
+typedef struct {
+    HashEntry *table;
+    int size;
+} HashTable;
+
+HashTable *createHashTable(int size) {
+    HashTable *hashTable = (HashTable *)malloc(sizeof(HashTable));
+    hashTable->table = (HashEntry *)malloc(sizeof(HashEntry) * size);
+    hashTable->size = size;
+
+    for (int i = 0; i < size; i++) {
+        hashTable->table[i].key = -1;
+        hashTable->table[i].value = -1;
+    }
+
+    return hashTable;
+}
+
+int hash(int key, int size) {
+    return key % size;
+}
+
+void insert(HashTable *hashTable, int key, int value) {
+    int index = hash(key, hashTable->size);
+
+    while (hashTable->table[index].key != -1) {
+        index = (index + 1) % hashTable->size; // Linear probing
+    }
+
+    hashTable->table[index].key = key;
+    hashTable->table[index].value = value;
+}
+
+int search(HashTable *hashTable, int key) {
+    int index = hash(key, hashTable->size);
+
+    while (hashTable->table[index].key != key) {
+        if (hashTable->table[index].key == -1)
+            return -1; // Key not found
+        index = (index + 1) % hashTable->size; // Linear probing
+    }
+
+    return hashTable->table[index].value;
+}
+
+void display(HashTable *hashTable) {
+    for (int i = 0; i < hashTable->size; i++) {
+        printf("Index: %d, Key: %d, Value: %d\n", i, hashTable->table[i].key, hashTable->table[i].value);
+    }
+}
+
+int main() {
+    HashTable *hashTable = createHashTable(SIZE);
+
+    insert(hashTable, 5, 50);
+    insert(hashTable, 15, 150);
+    insert(hashTable, 25, 250);
+
+    display(hashTable);
+
+    int searchKey = 15;
+    int searchResult = search(hashTable, searchKey);
+    if (searchResult != -1)
+        printf("Value for key %d: %d\n", searchKey, searchResult);
+    else
+        printf("Key %d not found.\n", searchKey);
+
+    free(hashTable->table);
+    free(hashTable);
+
+    return 0;
+}
